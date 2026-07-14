@@ -35,9 +35,6 @@ on:
         - AZU-IA-PSS-TEST-NEW-N
         - AZU-IA-PSS-TEST-prod-new-N
         - AZU-IA-PSS-TEST-QA-NEW-N
-        - AZU-IA-PSS-VCE-WFI-P
-        - AZU-IA-PSS-VCNG-SHARED-N
-        - AZU-IA-PSS-VCNG-SHARED-P
       owner:
         description: Owner or team responsible for these resources (used for tagging and accountability).
         required: true

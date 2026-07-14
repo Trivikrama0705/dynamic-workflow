@@ -1,0 +1,17 @@
+{
+  "project_name": {
+    "placeholder": "Select project name",
+    "values": ["WFI", "VCNG", "LA"]
+  },
+  "environment": ["dev", "qa", "staging", "prod"],
+  "subscription": [
+    "AZU-IA-PSS-VCE-WFI-N",
+    "AZU-IA-PSS-SOF-SHARED-N",
+    "AZU-IA-PSS-SOF-sharedqa-N",
+    "AZU-IA-PSS-SOF-SHARED-P"
+  ],
+  "location": ["eastus", "northeurope", "westus"],
+  "instance": ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010"],
+  "target_workflows": ["ACR.yml"],
+  "exclude_workflows": ["sync-dynamic-inputs.yml"]
+}

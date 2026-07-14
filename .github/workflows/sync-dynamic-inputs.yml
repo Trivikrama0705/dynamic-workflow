@@ -1,0 +1,166 @@
+name: Sync Dynamic Inputs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/config/dynamic-inputs.json'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate config JSON
+        run: python3 -c "import json; json.load(open('.github/config/dynamic-inputs.json'))"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install ruamel.yaml
+
+      - name: Create sync branch
+        id: branch
+        run: |
+          BRANCH="config-sync/$(date +%Y%m%d-%H%M%S)"
+          git checkout -b "$BRANCH"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Run sync (inline Python)
+        run: |
+          python3 << 'PYEOF'
+          import json
+          from pathlib import Path
+          from ruamel.yaml import YAML
+          from ruamel.yaml.scalarstring import DoubleQuotedScalarString as DQ
+
+          REPO_ROOT = Path(".").resolve()
+          CONFIG_PATH = REPO_ROOT / ".github/config/dynamic-inputs.json"
+          WORKFLOWS_DIR = REPO_ROOT / ".github/workflows"
+
+          QUOTED_FIELDS = {"instance"}
+
+          yaml = YAML()
+          yaml.preserve_quotes = True
+          yaml.width = 4096
+
+          def load_config():
+              with open(CONFIG_PATH) as f:
+                  return json.load(f)
+
+          def target_files(config):
+              exclude = set(config.get("exclude_workflows", []))
+              targets = config.get("target_workflows", ["all"])
+              if targets == ["all"]:
+                  return sorted(f for f in WORKFLOWS_DIR.glob("*.y*ml") if f.name not in exclude)
+              return [WORKFLOWS_DIR / t for t in targets if (WORKFLOWS_DIR / t).exists()]
+
+          def build_values(field_name, config):
+              if field_name == "project_name":
+                  pn = config["project_name"]
+                  vals = [pn["placeholder"]] + pn["values"]
+              else:
+                  vals = config[field_name]
+              if field_name in QUOTED_FIELDS:
+                  return [DQ(str(v)) for v in vals]
+              return list(vals)
+
+          def set_options_in_place(seq, new_values):
+              while len(seq):
+                  del seq[0]
+              for v in new_values:
+                  seq.append(v)
+
+          def update_file(path, config):
+              with open(path) as f:
+                  data = yaml.load(f)
+
+              if not data or "on" not in data or "workflow_dispatch" not in (data.get("on") or {}):
+                  return False
+
+              inputs = data["on"]["workflow_dispatch"].get("inputs", {})
+              changed = False
+
+              for field_name in ("project_name", "environment", "subscription", "location", "instance"):
+                  if field_name not in inputs:
+                      continue
+                  new_values = build_values(field_name, config)
+                  current_seq = inputs[field_name].get("options")
+                  if current_seq is None:
+                      continue
+                  current_plain = [str(v) for v in current_seq]
+                  if current_plain != [str(v) for v in new_values]:
+                      set_options_in_place(current_seq, new_values)
+                      changed = True
+
+              if changed:
+                  with open(path, "w") as f:
+                      yaml.dump(data, f)
+              return changed
+
+          def main():
+              config = load_config()
+              files = target_files(config)
+              if not files:
+                  print("No target workflow files found.")
+                  return
+
+              changed_files = []
+              for path in files:
+                  try:
+                      if update_file(path, config):
+                          changed_files.append(path.name)
+                          print(f"Updated: {path.name}")
+                      else:
+                          print(f"No change needed: {path.name}")
+                  except Exception as e:
+                      print(f"::warning::Failed to process {path.name}: {e}")
+
+              Path("sync_summary.txt").write_text("\n".join(changed_files))
+
+          main()
+          PYEOF
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet -- .github/workflows/; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit and push
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add .github/workflows/
+          git commit -m "chore: sync workflow inputs from dynamic-inputs.json"
+          git push origin "${{ steps.branch.outputs.branch }}"
+
+      - name: Open Pull Request
+        if: steps.diff.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.WORKFLOW_DISPATCH_PAT }}
+        run: |
+          CHANGED=$(cat sync_summary.txt | tr '\n' ',' | sed 's/,$//')
+          gh pr create \
+            --title "chore: sync dynamic inputs from config" \
+            --body "Auto-generated: updated dropdown options in: ${CHANGED}. Source: .github/config/dynamic-inputs.json" \
+            --base main \
+            --head "${{ steps.branch.outputs.branch }}"
+
+      - name: No changes
+        if: steps.diff.outputs.changed == 'false'
+        run: echo "Config produced no diff — nothing to PR."

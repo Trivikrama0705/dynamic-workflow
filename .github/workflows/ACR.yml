@@ -1,0 +1,105 @@
+name: ACR
+run-name: >-
+  ${{ format('Provision ACR - {0}', (inputs.acr_name != '' && format('{0}{1}{2}{3}', inputs.acr_name, inputs.environment, inputs.location, inputs.instance)) || inputs.project_name) }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: Project Name
+        required: true
+        type: choice
+        options: ["Select project name", WFI, VCNG, LA]
+      custom_project_name:
+        description: Is your project name not listed? Check this box and enter your project name below.
+        required: false
+        type: boolean
+      custom_project_name_value:
+        description: Enter your project name (if not listed above)
+        required: false
+        type: string
+      environment:
+        description: Environment
+        required: true
+        type: choice
+        options: [dev, qa, staging, prod]
+      subscription:
+        description: Azure Subscription (logical name)
+        required: true
+        type: choice
+        options:
+          - AZU-IA-PSS-VCE-WFI-N
+          - AZU-IA-PSS-SOF-SHARED-N
+          - AZU-IA-PSS-SOF-sharedqa-N
+          - AZU-IA-PSS-SOF-SHARED-P
+      owner:
+        description: Owner or team responsible for these resources (used for tagging and accountability).
+        required: true
+      resource_group_name:
+        description: Resource Group Name
+        required: true
+      location:
+        description: Azure Region
+        required: true
+        type: choice
+        options: [eastus, northeurope, westus]
+      instance:
+        description: Instance Number. Used to uniquely identify and differentiate multiple deployments of the same service within the same environment
+        required: true
+        type: choice
+        options: ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010"]
+      acr_name:
+        description: >
+          ACR Name Prefix (e.g., wfiacr). Provide this to create a new ACR.
+        required: false
+      acr_sku:
+        description: The SKU name of the container registry. Possible values are Basic, Standard and Premium.
+        required: true
+        type: choice
+        options: [Basic, Standard, Premium]
+      public_network_access_enabled:
+        description: Whether public network access is allowed for the container registry.
+        required: false
+        type: boolean
+        default: false
+      admin_enabled:
+        description: Specifies whether the admin user is enabled.
+        required: false
+        type: boolean
+        default: false
+      pve_vnet_name:
+        description: Private endpoint VNET name
+        required: false
+      pve_subnet_name:
+        description: Private endpoint Subnet name
+        required: false
+      pve_vnet_resource_group_name:
+        description: Private endpoint Vnet Resource Group Name
+        required: false
+
+jobs:
+  provision:
+    uses: HON-IA/pss_cf_mod_reusable_templates/.github/workflows/iac-service-provision.yml@feature/vamsi/iac
+    secrets: inherit
+    with:
+      working_directory: "ACR"
+      subscription: ${{ inputs.subscription }}
+      tfvars_json: |
+        {
+          "resource_group_name": "${{ inputs.resource_group_name }}",
+          "location": "${{ inputs.location }}",
+          "acr_sku": "${{ inputs.acr_sku }}",
+          "public_network_access_enabled": ${{ inputs.public_network_access_enabled }},
+          "admin_enabled": ${{ inputs.admin_enabled }},
+          "pve_vnet_name": "${{ inputs.pve_vnet_name }}",
+          "pve_subnet_name": "${{ inputs.pve_subnet_name }}",
+          "pve_vnet_resource_group_name": "${{ inputs.pve_vnet_resource_group_name }}",
+          "owner": "${{ inputs.owner }}",
+          "acr_name": "${{ inputs.acr_name != '' && format('{0}{1}{2}{3}', inputs.acr_name, inputs.environment, inputs.location, inputs.instance) }}"
+        }
+      application_name: ${{ inputs.custom_project_name && inputs.custom_project_name_value || inputs.project_name }}
+      environment: ${{ inputs.environment }}
+      service_name: "ACR"
+      instance: ${{ inputs.instance }}
+      location: ${{ inputs.location }}
+      resource_name_override: ${{ inputs.acr_name != '' && format('{0}{1}{2}{3}', inputs.acr_name, inputs.environment, inputs.location, inputs.instance) }}

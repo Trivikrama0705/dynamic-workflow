@@ -28,10 +28,11 @@ on:
         required: true
         type: choice
         options:
-          - AZU-IA-PSS-VCE-WFI-N
-          - AZU-IA-PSS-SOF-SHARED-N
-          - AZU-IA-PSS-SOF-sharedqa-N
-          - AZU-IA-PSS-SOF-SHARED-P
+        - AZU-IA-PSS-VCE-WFI-N
+        - AZU-IA-PSS-SOF-SHARED-N
+        - AZU-IA-PSS-SOF-sharedqa-N
+        - AZU-IA-PSS-SOF-SHARED-P
+        - AZU-IA-PSS-TEST-NEW-N
       owner:
         description: Owner or team responsible for these resources (used for tagging and accountability).
         required: true

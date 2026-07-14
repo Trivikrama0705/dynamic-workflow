@@ -1,0 +1,141 @@
+name: AKS
+run-name: >-
+  ${{ format('Provision AKS - {0}', format('{0}-{1}-{2}-{3}', github.event.inputs.resource_prefix, github.event.inputs.environment, github.event.inputs.location, github.event.inputs.instance)) }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: Project Name
+        required: true
+        type: choice
+        options: ["Select project name", WFI, VCNG, LA]
+      custom_project_name:
+        description: Is your project name not listed? Check this box and enter your project name below.
+        required: false
+        type: boolean
+      custom_project_name_value:
+        description: Enter your project name (if not listed above)
+        required: false
+        type: string
+      environment:
+        description: Environment
+        required: true
+        type: choice
+        options: [dev, qa, staging, prod]
+      subscription:
+        description: Azure Subscription (logical name)
+        required: true
+        type: choice
+        options:
+          - AZU-IA-PSS-VCE-WFI-N
+          - AZU-IA-PSS-SOF-SHARED-N
+          - AZU-IA-PSS-SOF-sharedqa-N
+          - AZU-IA-PSS-SOF-SHARED-P
+      owner:
+        description: Owner or team responsible for these resources (used for tagging and accountability).
+        required: true
+      resource_group_name:
+        description: Resource Group Name
+        required: true
+      location:
+        description: Azure Region
+        required: true
+        type: choice
+        options: [eastus, northeurope, westus]
+      instance:
+        description: Instance Number. Used to uniquely identify and differentiate multiple deployments of the same service within the same environment.
+        required: true
+        type: choice
+        options: ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010"]
+      resource_prefix:
+        description: Resource name prefix (e.g. wfi-aks). Final resource name will be <Resource name>-<env>-<region>-<instance>
+        required: true
+      mi_identity:
+        description: User Assigned Managed Identity Name
+        required: true
+      mi_identity_rg:
+        description: Managed Identity Resource Group Name
+        required: true
+      vnet_name:
+        description: VNet Name for AKS
+        required: true
+      subnet_name:
+        description: Subnet Name for AKS
+        required: true
+      subnet_resource_group:
+        description: Subnet Resource Group Name
+        required: true
+      network_plugin:
+        description: AKS Network Plugin
+        required: true
+        type: choice
+        options: [azure, kubenet]
+      service_cidr:
+        description: Service CIDR for AKS
+        required: true
+      dns_service_ip:
+        description: DNS Service IP for AKS
+        required: true
+      pod_cidr:
+        description: Pod CIDR for AKS
+        required: false
+      additional_nodepool_os_sku:
+        description: Additional Node Pool OS SKU
+        required: true
+        type: choice
+        options: [Ubuntu, AzureLinux, Windows2019, Windows2022]
+      ssh_key_data:
+        description: SSH Key Value for AKS Node Pools (required only if using Linux/Ubuntu OS SKU)
+        required: false
+      additional_nodepool_name:
+        description: Name for the additional node pool
+        required: false
+        type: string
+      enable_windows_profile:
+        description: Enable Windows profile for AKS (true/false)
+        required: true
+        type: boolean
+      windows_admin_username:
+        description: Admin username for Windows nodes (AKS Windows profile)
+        required: false
+        type: string
+      windows_admin_password:
+        description: Admin password for Windows nodes (AKS Windows profile)
+        required: false
+        type: string
+
+jobs:
+  provision:
+    uses: HON-IA/pss_cf_mod_reusable_templates/.github/workflows/iac-service-provision.yml@feature/vamsi/iac
+    secrets: inherit
+    with:
+      working_directory: "AKS"
+      resource_prefix: ${{ inputs.resource_prefix }}
+      subscription: ${{ inputs.subscription }}
+      tfvars_json: |
+        {
+          "resource_group_name": "${{ inputs.resource_group_name }}",
+          "location": "${{ inputs.location }}",
+          "owner": "${{ inputs.owner }}",
+          "mi_identity": "${{ inputs.mi_identity }}",
+          "mi_identity_rg": "${{ inputs.mi_identity_rg }}",
+          "vnet_name": "${{ inputs.vnet_name }}",
+          "subnet_name": "${{ inputs.subnet_name }}",
+          "subnet_resource_group": "${{ inputs.subnet_resource_group }}",
+          "network_plugin": "${{ inputs.network_plugin }}",
+          "service_cidr": "${{ inputs.service_cidr }}",
+          "dns_service_ip": "${{ inputs.dns_service_ip }}",
+          "pod_cidr": "${{ inputs.pod_cidr }}",
+          "ssh_key_data": ${{ toJson(inputs.ssh_key_data) }},
+          "additional_nodepool_os_sku": "${{ inputs.additional_nodepool_os_sku }}",
+          "additional_nodepool_name": "${{ inputs.additional_nodepool_name }}",
+          "enable_windows_profile": ${{ inputs.enable_windows_profile }},
+          "windows_admin_username": "${{ inputs.windows_admin_username }}",
+          "windows_admin_password": "${{ inputs.windows_admin_password }}"
+        }
+      location: ${{ inputs.location }}
+      application_name: ${{ inputs.custom_project_name && inputs.custom_project_name_value || inputs.project_name }}
+      environment: ${{ inputs.environment }}
+      service_name: "AKS"
+      instance: ${{ inputs.instance }}

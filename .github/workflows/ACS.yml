@@ -1,0 +1,125 @@
+name: ACS
+run-name: >-
+  ${{ format('Provision ACS - {0}', format('{0}-{1}-{2}-{3}', github.event.inputs.resource_prefix, github.event.inputs.environment, github.event.inputs.location, github.event.inputs.instance)) }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      project_name:
+        description: Project Name
+        required: true
+        type: choice
+        options: ["Select project name", WFI, VCNG, LA]
+      custom_project_name:
+        description: Is your project name not listed? Check this box and enter your project name below.
+        required: false
+        type: boolean
+      custom_project_name_value:
+        description: Enter your project name (if not listed above)
+        required: false
+        type: string
+      environment:
+        description: Environment
+        required: true
+        type: choice
+        options: [dev, qa, staging, prod]
+      subscription:
+        description: Azure Subscription (logical name)
+        required: true
+        type: choice
+        options:
+          - AZU-IA-PSS-VCE-WFI-N
+          - AZU-IA-PSS-SOF-SHARED-N
+          - AZU-IA-PSS-SOF-sharedqa-N
+          - AZU-IA-PSS-SOF-SHARED-P
+      owner:
+        description: Owner or team responsible for these resources (used for tagging and accountability).
+        required: true
+      resource_group_name:
+        description: Resource Group Name
+        required: true
+      location:
+        description: Azure Region
+        required: true
+        type: choice
+        options: [eastus, northeurope]
+      data_location:
+        description: Data Location (e.g., United States)
+        required: true
+        type: choice
+        options: ["United States", "Europe"]
+      instance:
+        description: Instance Number. Used to uniquely identify and differentiate multiple deployments of the same service within the same
+        required: true
+        type: choice
+        options: ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010"]
+      resource_prefix:
+        description: Resource name prefix (app-component, e.g. wfi-acs). Final resource name will be <prefix>-<env>-<region>-<instance>
+        required: true
+      enable_email_service:
+        description: Enable Email Service
+        required: true
+        type: choice
+        options: [true, false]
+      email_service_name:
+        description: >
+          Email service name prefix (e.g. wfi-acsemail). Final email service name will be <email_service_name>-<env>-<region>-<instance>
+        required: false
+      domain_management:
+        description: Domain Management
+        required: true
+        type: choice
+        options: [CustomerManaged, AzureManaged]
+      custom_domain_name:
+        description: Custom Domain Name (e.g., mail.example.com)
+        required: false
+
+jobs:
+  provision:
+    uses: HON-IA/pss_cf_mod_reusable_templates/.github/workflows/iac-service-provision.yml@main
+    secrets: inherit
+    with:
+      subscription: ${{ inputs.subscription }}
+      working_directory: "ACS"
+      resource_prefix: ${{ inputs.resource_prefix }}
+      email_service_name: ${{ inputs.email_service_name }}-${{ inputs.environment }}-${{ inputs.location }}-${{ inputs.instance }}
+      tfvars_json: |
+        {
+          "resource_group_name": "${{ inputs.resource_group_name }}",
+          "location": "${{ inputs.location }}",
+          "data_location": "${{ inputs.data_location }}",
+          "enable_email_service": ${{ inputs.enable_email_service }},
+          "custom_domain_name": "${{ inputs.custom_domain_name }}",
+          "domain_management": "${{ inputs.domain_management }}",
+          "owner": "${{ inputs.owner }}"
+        }
+      location: ${{ inputs.location }}
+      application_name: ${{ inputs.custom_project_name && inputs.custom_project_name_value || inputs.project_name }}
+      environment: ${{ inputs.environment }}
+      service_name: "ACS"
+      instance: ${{ inputs.instance }}
+
+# Decommission_a_service:
+#   if: ${{ github.event.inputs.action == 'Decommission a service' }}
+#   uses: HON-IA/pss_cf_mod_reusable_templates/.github/workflows/iac-service-decommission.yml@main
+#   secrets: inherit
+#   with:
+#     working_directory: "ACS"
+#     resource_prefix: ${{ inputs.resource_prefix }}
+#     email_service_name: ${{ inputs.email_service_name }}-${{ inputs.environment }}-${{ inputs.location }}-${{ inputs.instance }}
+#     tfvars_json: |
+#       {
+#         "subscription_id": "${{ inputs.subscription == 'AZU-IA-PSS-VCE-WFI-N' && '7f0a6fce-e069-4b41-99e8-88d1ece5c29a' || '8ee99bd0-1b69-47eb-9b6e-746e2ed94c26' }}",
+#         "resource_group_name": "${{ inputs.resource_group_name }}",
+#         "location": "${{ inputs.location }}",
+#         "data_location": "${{ inputs.data_location }}",
+#         "enable_email_service": ${{ inputs.enable_email_service }},
+#         "custom_domain_name": "${{ inputs.custom_domain_name }}",
+#         "domain_management": "${{ inputs.domain_management }}",
+#         "owner": "${{ inputs.owner }}"
+#       }
+#     application_name: ${{ inputs.custom_application_name && inputs.custom_application_name_value || inputs.application_name }}
+#     environment: ${{ inputs.environment }}
+#     service_name: "ACS"
+#     instance: ${{ inputs.instance }}
+#     location: ${{ inputs.location }}

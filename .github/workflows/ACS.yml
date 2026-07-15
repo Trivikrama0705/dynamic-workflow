@@ -9,7 +9,7 @@ on:
         description: Project Name
         required: true
         type: choice
-        options: [Select project name, WFI, VCNG, LA, PMX, NEXA]
+        options: [Select project name, WFI, VCNG, LA]
       custom_project_name:
         description: Is your project name not listed? Check this box and enter your project name below.
         required: false
@@ -30,11 +30,6 @@ on:
         options:
         - AZU-IA-PSS-VCE-WFI-N
         - AZU-IA-PSS-SOF-SHARED-N
-        - AZU-IA-PSS-SOF-sharedqa-N
-        - AZU-IA-PSS-SOF-SHARED-P
-        - AZU-IA-PSS-TEST-NEW-N
-        - AZU-IA-PSS-TEST-prod-new-N
-        - AZU-IA-PSS-TEST-QA-NEW-N
       owner:
         description: Owner or team responsible for these resources (used for tagging and accountability).
         required: true
@@ -45,7 +40,7 @@ on:
         description: Azure Region
         required: true
         type: choice
-        options: [eastus, northeurope, westus, centralus, southeastasia]
+        options: [eastus, northeurope, westus]
       data_location:
         description: Data Location (e.g., United States)
         required: true
@@ -88,6 +83,7 @@ jobs:
       email_service_name: ${{ inputs.email_service_name }}-${{ inputs.environment }}-${{ inputs.location }}-${{ inputs.instance }}
       tfvars_json: |
         {
+          "subscription_id": "${{ inputs.subscription == 'AZU-IA-PSS-VCE-WFI-N' && '7f0a6fce-e069-4b41-99e8-88d1ece5c29a' || '8ee99bd0-1b69-47eb-9b6e-746e2ed94c26' }}",
           "resource_group_name": "${{ inputs.resource_group_name }}",
           "location": "${{ inputs.location }}",
           "data_location": "${{ inputs.data_location }}",

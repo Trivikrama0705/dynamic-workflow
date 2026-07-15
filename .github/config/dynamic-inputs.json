@@ -1,20 +1,19 @@
 {
   "project_name": {
     "placeholder": "Select project name",
-    "values": ["WFI", "VCNG", "LA", "PMX", "NEXA"]
+    "values": ["WFI", "VCNG", "LA"]
   },
   "environment": ["dev", "qa", "staging", "prod"],
-  "subscription": [
-    "AZU-IA-PSS-VCE-WFI-N",
-    "AZU-IA-PSS-SOF-SHARED-N",
-    "AZU-IA-PSS-SOF-sharedqa-N",
-    "AZU-IA-PSS-SOF-SHARED-P",
-    "AZU-IA-PSS-TEST-NEW-N",
-    "AZU-IA-PSS-TEST-prod-new-N",
-    "AZU-IA-PSS-TEST-QA-NEW-N"
-  ],
-  "location": ["eastus", "northeurope", "westus", "centralus", "southeastasia"],
+  "subscription": {
+    "AZU-IA-PSS-VCE-WFI-N": "7f0a6fce-e069-4b41-99e8-88d1ece5c29a",
+    "AZU-IA-PSS-SOF-SHARED-N": "8ee99bd0-1b69-47eb-9b6e-746e2ed94c26",
+    "AZU-IA-PSS-SOF-sharedqa-N": "REPLACE-WITH-REAL-ID",
+    "AZU-IA-PSS-SOF-SHARED-P": "REPLACE-WITH-REAL-ID",
+    "AZU-IA-PSS-PSS-OPINTELSTG-P": "REPLACE-WITH-REAL-ID",
+    "AZU-IA-PSS-PSS-OPINTEL-N": "REPLACE-WITH-REAL-ID"
+  },
+  "location": ["eastus", "northeurope", "westus"],
   "instance": ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010"],
   "target_workflows": ["all"],
-  "exclude_workflows": ["sync-dynamic-inputs.yml"]
+  "exclude_workflows": ["drift-detection.yml", "governance.yml", "Decommission.yml"]
 }

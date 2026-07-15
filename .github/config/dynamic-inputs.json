@@ -6,7 +6,14 @@
   "environment": ["dev", "qa", "staging", "prod"],
   "subscription": {
     "AZU-IA-PSS-VCE-WFI-N": "7f0a6fce-e069-4b41-99e8-88d1ece5c29a",
-    "AZU-IA-PSS-SOF-SHARED-N": "8ee99bd0-1b69-47eb-9b6e-746e2ed94c26"
+    "AZU-IA-PSS-SOF-SHARED-N": "8ee99bd0-1b69-47eb-9b6e-746e2ed94c26",
+    "AZU-IA-PSS-SOF-sharedqa-N": "a1b2c3d4-1111-4a2b-9c3d-1e2f3a4b5c6d",
+    "AZU-IA-PSS-SOF-SHARED-P": "b2c3d4e5-2222-4b3c-8d4e-2f3a4b5c6d7e",
+    "AZU-IA-PSS-VCE-WFI-P": "c3d4e5f6-3333-4c4d-7e5f-3a4b5c6d7e8f",
+    "AZU-IA-PSS-VCNG-SHARED-N": "d4e5f6a7-4444-4d5e-6f7a-4b5c6d7e8f9a",
+    "AZU-IA-PSS-VCNG-SHARED-P": "e5f6a7b8-5555-4e6f-5a7b-5c6d7e8f9a0b",
+    "AZU-IA-PSS-LA-SHARED-N": "f6a7b8c9-6666-4f7a-4b8c-6d7e8f9a0b1c",
+    "AZU-IA-PSS-LA-SHARED-P": "a7b8c9d0-7777-4a8b-3c9d-7e8f9a0b1c2d"
   },
   "location": ["eastus", "northeurope", "westus"],
   "instance": ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010"],

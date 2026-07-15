@@ -6,11 +6,7 @@
   "environment": ["dev", "qa", "staging", "prod"],
   "subscription": {
     "AZU-IA-PSS-VCE-WFI-N": "7f0a6fce-e069-4b41-99e8-88d1ece5c29a",
-    "AZU-IA-PSS-SOF-SHARED-N": "8ee99bd0-1b69-47eb-9b6e-746e2ed94c26",
-    "AZU-IA-PSS-SOF-sharedqa-N": "REPLACE-WITH-REAL-ID",
-    "AZU-IA-PSS-SOF-SHARED-P": "REPLACE-WITH-REAL-ID",
-    "AZU-IA-PSS-PSS-OPINTELSTG-P": "REPLACE-WITH-REAL-ID",
-    "AZU-IA-PSS-PSS-OPINTEL-N": "REPLACE-WITH-REAL-ID"
+    "AZU-IA-PSS-SOF-SHARED-N": "8ee99bd0-1b69-47eb-9b6e-746e2ed94c26"
   },
   "location": ["eastus", "northeurope", "westus"],
   "instance": ["001", "002", "003", "004", "005", "006", "007", "008", "009", "010"],

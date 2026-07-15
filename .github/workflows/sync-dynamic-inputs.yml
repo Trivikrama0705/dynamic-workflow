@@ -13,12 +13,12 @@ permissions:
 
 jobs:
   sync:
-    runs-on: ${{ vars.RUNNER_LABEL }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.PSSSWCICDPATTOKEN }}
+          token: ${{ secrets.WORKFLOW_DISPATCH_PAT }}
 
       - uses: actions/setup-python@v5
         with:
@@ -307,7 +307,7 @@ jobs:
       - name: Open Pull Request
         if: steps.diff.outputs.changed == 'true'
         env:
-          GH_TOKEN: ${{ secrets.PSSSWCICDPATTOKEN }}
+          GH_TOKEN: ${{ secrets.WORKFLOW_DISPATCH_PAT }}
         run: |
           CHANGED=$(cat sync_summary.txt | tr '\n' ',' | sed 's/,$//')
           gh pr create \

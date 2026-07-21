@@ -9,7 +9,7 @@ on:
         description: Project Name
         required: true
         type: choice
-        options: [Select project name, WFI, VCNG, LA, PMX, NEXA]
+        options: [Select project name, WFI, VCNG, LA]
       custom_project_name:
         description: Is your project name not listed? Check this box and enter your project name below.
         required: false
@@ -32,9 +32,11 @@ on:
         - AZU-IA-PSS-SOF-SHARED-N
         - AZU-IA-PSS-SOF-sharedqa-N
         - AZU-IA-PSS-SOF-SHARED-P
-        - AZU-IA-PSS-TEST-NEW-N
-        - AZU-IA-PSS-TEST-prod-new-N
-        - AZU-IA-PSS-TEST-QA-NEW-N
+        - AZU-IA-PSS-VCE-WFI-P
+        - AZU-IA-PSS-VCNG-SHARED-N
+        - AZU-IA-PSS-VCNG-SHARED-P
+        - AZU-IA-PSS-LA-SHARED-N
+        - AZU-IA-PSS-LA-SHARED-P
       owner:
         description: Owner or team responsible for these resources (used for tagging and accountability).
         required: true
@@ -45,7 +47,7 @@ on:
         description: Azure Region
         required: true
         type: choice
-        options: [eastus, northeurope, westus, centralus, southeastasia]
+        options: [eastus, northeurope, westus]
       instance:
         description: Instance Number. Used to uniquely identify and differentiate multiple deployments of the same service within the same environment
         required: true

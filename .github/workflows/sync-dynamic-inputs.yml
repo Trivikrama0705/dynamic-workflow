@@ -147,77 +147,6 @@ jobs:
               new_text = text[:block_start] + new_block_text + rest[block_end_offset:]
               return new_text, True
 
-          def build_subscription_id_expr(subscription_map):
-              keys = list(subscription_map.keys())
-              parts = []
-              for i, key in enumerate(keys):
-                  value = subscription_map[key]
-                  if i == len(keys) - 1:
-                      parts.append("'" + value + "'")
-                  else:
-                      parts.append("inputs.subscription == '" + key + "' && '" + value + "'")
-              return " || ".join(parts)
-
-          def find_block_by_key(text, key_name):
-              key_re = re.compile(r'(?m)^([ \t]*)' + re.escape(key_name) + r':[ \t]*\|?[ \t]*\r?\n')
-              m = key_re.search(text)
-              if not m:
-                  return None
-              indent = m.group(1)
-              block_start = m.end()
-              rest = text[block_start:]
-              lines = rest.splitlines(keepends=True)
-              block_end_offset = 0
-              for line in lines:
-                  if line.strip() == "":
-                      block_end_offset += len(line)
-                      continue
-                  indent_len = len(line) - len(line.lstrip(" "))
-                  if indent_len <= len(indent):
-                      break
-                  block_end_offset += len(line)
-              return indent, block_start, rest[:block_end_offset]
-
-          def patch_subscription_id(text, subscription_map):
-              expr = build_subscription_id_expr(subscription_map)
-              dollar = chr(36)
-              brace_open = "{" + "{"
-              brace_close = "}" + "}"
-              new_value = dollar + brace_open + " " + expr + " " + brace_close
-
-              found = find_block_by_key(text, "tfvars_json")
-              if not found:
-                  return text, False
-              _, block_start, block_text = found
-
-              sub_id_re = re.compile(r'(?m)^([ \t]*)"subscription_id":[ \t]*"[^\n]*"([ \t]*,?)[ \t]*\r?\n')
-              sm = sub_id_re.search(block_text)
-              if sm:
-                  indent = sm.group(1)
-                  trailing_comma = sm.group(2) or ","
-                  new_line = indent + '"subscription_id": "' + new_value + '"' + trailing_comma + "\n"
-                  if sm.group(0) == new_line:
-                      return text, False
-                  new_block_text = block_text[:sm.start()] + new_line + block_text[sm.end():]
-                  new_text = text[:block_start] + new_block_text + text[block_start + len(block_text):]
-                  return new_text, True
-
-              brace_re = re.compile(r'(?m)^([ \t]*)\{[ \t]*\r?\n')
-              bm = brace_re.search(block_text)
-              if not bm:
-                  return text, False
-
-              brace_indent = bm.group(1)
-              after_brace = block_text[bm.end():]
-              first_key_match = re.search(r'(?m)^([ \t]*)"', after_brace)
-              key_indent = first_key_match.group(1) if first_key_match else brace_indent + "  "
-
-              new_line = key_indent + '"subscription_id": "' + new_value + '",' + "\n"
-              insert_pos = bm.end()
-              new_block_text = block_text[:insert_pos] + new_line + block_text[insert_pos:]
-              new_text = text[:block_start] + new_block_text + text[block_start + len(block_text):]
-              return new_text, True
-
           def update_file(path, config):
               text = path.read_text()
               original = text
@@ -230,10 +159,6 @@ jobs:
                   force_quote = field_name in QUOTED_FIELDS
                   text, changed = patch_field(text, field_name, new_values, force_quote)
                   any_changed = any_changed or changed
-
-              if "subscription" in config and re.search(r'(?m)^[ \t]*tfvars_json:[ \t]*\|', text):
-                  text, sub_id_changed = patch_subscription_id(text, config["subscription"])
-                  any_changed = any_changed or sub_id_changed
 
               if any_changed and text != original:
                   path.write_text(text)
